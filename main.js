@@ -9,11 +9,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 1a. EmailJS form submission setup
   if (typeof emailjs !== "undefined") {
-    emailjs.init("3ygpgjDDA8oxXYvv8");
+    emailjs.init({
+      publicKey: "3ygpgjDDA8oxXYvv8",
+    });
   }
 
   const contactForm = document.getElementById("contact-form");
   const contactStatus = document.getElementById("contact-status");
+
+  if (contactStatus && typeof emailjs === "undefined") {
+    contactStatus.textContent = "Email service not loaded yet. Please refresh the page.";
+    contactStatus.classList.add("error");
+  }
 
   if (contactForm) {
     contactForm.addEventListener("submit", (event) => {
@@ -29,6 +36,14 @@ document.addEventListener("DOMContentLoaded", () => {
       contactStatus.textContent = "Sending message...";
       contactStatus.classList.remove("error", "success");
       submitButton.disabled = true;
+
+      if (typeof emailjs === "undefined" || typeof emailjs.send !== "function") {
+        contactStatus.textContent = "Email service unavailable. Open the browser console for details.";
+        contactStatus.classList.add("error");
+        console.error("EmailJS is not loaded or emailjs.send is unavailable.", window.emailjs);
+        submitButton.disabled = false;
+        return;
+      }
 
       const templateParams = {
         from_name: contactForm.name.value,
