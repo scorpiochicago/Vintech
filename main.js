@@ -6,6 +6,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Apply the saved theme on page load
   document.body.setAttribute("data-theme", currentTheme);
+
+  // 1a. EmailJS form submission setup
+  if (typeof emailjs !== "undefined") {
+    emailjs.init("3ygpgjDDA8oxXYvv8");
+  }
+
+  const contactForm = document.getElementById("contact-form");
+  const contactStatus = document.getElementById("contact-status");
+
+  if (contactForm) {
+    contactForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const submitButton = contactForm.querySelector("button[type='submit']");
+
+      if (!contactForm.name.value || !contactForm.email.value || !contactForm.message.value) {
+        contactStatus.textContent = "Please fill in every field before sending.";
+        contactStatus.classList.add("error");
+        return;
+      }
+
+      contactStatus.textContent = "Sending message...";
+      contactStatus.classList.remove("error", "success");
+      submitButton.disabled = true;
+
+      const templateParams = {
+        from_name: contactForm.name.value,
+        from_email: contactForm.email.value,
+        to_email: "kelyswissgold@gmail.com",
+        message: contactForm.message.value,
+      };
+
+      emailjs
+        .send("service_l4f8f7m", "template_xv5odqp", templateParams)
+        .then(() => {
+          contactStatus.textContent = "Message sent! I will reply soon.";
+          contactStatus.classList.add("success");
+          contactForm.reset();
+        })
+        .catch((error) => {
+          console.error("EmailJS error:", error);
+          contactStatus.textContent = "Sorry, the message could not be sent. Please try again later.";
+          contactStatus.classList.add("error");
+        })
+        .finally(() => {
+          submitButton.disabled = false;
+        });
+    });
+  }
   if (currentTheme === "light") {
     themeIcon.classList.remove("fa-sun");
     themeIcon.classList.add("fa-moon");
